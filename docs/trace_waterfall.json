@@ -1,29 +1,31 @@
 [
   {
     "step": 1,
-    "query": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
-    "action_type": "FINAL_ANSWER",
-    "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool.",
-    "output": "[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-    "latency_ms": 2845.93
-  },
-  {
-    "step": 1,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "tôi muốn đặt lịch khám tim mạch ngày mai",
     "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
+    "tool_name": "search_doctors",
     "arguments": {
-      "student_id": "SV2026001"
+      "specialty": "Tim mạch"
     },
-    "observation": {},
-    "latency_ms": 799.12
+    "observation": {
+      "status": "SUCCESS",
+      "doctors": [
+        {
+          "doctor_id": "DOC001",
+          "name": "BS. Nguyễn Văn An",
+          "specialty": "Tim mạch",
+          "location": "Vinmec Times City"
+        }
+      ]
+    },
+    "latency_ms": 1.31
   },
   {
     "step": 2,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "tôi muốn đặt lịch khám tim mạch ngày mai",
     "action_type": "FINAL_ANSWER",
-    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Chưa thể trả lời chi tiết do chưa nhận được dữ liệu từ MCP Server (hãy hoàn thành TODO 2.1).",
-    "latency_ms": 10.0
+    "thought": "Gemini phản hồi trực tiếp bằng văn bản (không cần gọi công cụ).",
+    "output": "Dựa trên kết quả tìm kiếm, Vinmec hiện có bác sĩ chuyên khoa Tim mạch:\n- **BS. Nguyễn Văn An** (Mã BS: `DOC001`) tại **Vinmec Times City**.\n\nĐể giúp bạn tra cứu lịch làm việc và tiến hành đặt lịch khám, bạn vui lòng cung cấp thêm các thông tin sau:\n1. **Ngày khám cụ thể** (định dạng DD/MM/YYYY).\n2. **Khung giờ khám mong muốn** (ví dụ: 09:00, 14:00,...).\n3. **Họ và tên bệnh nhân**.",
+    "latency_ms": 6896.79
   }
 ]

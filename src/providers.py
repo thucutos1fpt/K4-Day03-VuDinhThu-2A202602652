@@ -27,44 +27,131 @@ class BaseLLMProvider:
 
 
 class MockOfflineProvider(BaseLLMProvider):
-    """Offline Mock Provider dùng để chạy thử mà không tốn API Key"""
+    """Offline Mock Provider dùng để chạy thử mà không cần API Key."""
+
     def __init__(self):
         self.model_name = "Offline-Mock-Model-2026"
 
     def generate(self, prompt: str, system_prompt: str = "") -> str:
-        return f"[Mock Chatbot Response]: Xin chào! Tôi đã nhận được câu hỏi '{prompt}'. (Chế độ Chatbot không có Tool tra cứu dữ liệu thời gian thực)."
+        return (
+            f"[Mock Chatbot Response]: "
+            f"Xin chào! Tôi đã nhận được câu hỏi '{prompt}'. "
+            f"(Chế độ Chatbot không có Tool tra cứu dữ liệu thời gian thực)."
+        )
 
-    def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
+    def generate_with_tools(
+        self,
+        prompt: str,
+        tools_schema: List[Dict[str, Any]],
+        system_prompt: str = ""
+    ) -> Dict[str, Any]:
+
         prompt_lower = prompt.lower()
-        
-        # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
+
+        # ==============================================================
+        # 1. TÌM BÁC SĨ THEO CHUYÊN KHOA
+        # ==============================================================
+
+        if "tim mạch" in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "search_doctors",
+                "arguments": {
+                    "specialty": "Tim mạch"
+                },
+                "thought": (
+                    "Người dùng muốn tìm bác sĩ chuyên khoa Tim mạch. "
+                    "Tôi sẽ gọi tool search_doctors."
+                )
+            }
+
+        elif "nhi khoa" in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "search_doctors",
+                "arguments": {
+                    "specialty": "Nhi khoa"
+                },
+                "thought": (
+                    "Người dùng muốn tìm bác sĩ chuyên khoa Nhi khoa. "
+                    "Tôi sẽ gọi tool search_doctors."
+                )
+            }
+
+        elif "da liễu" in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "search_doctors",
+                "arguments": {
+                    "specialty": "Da liễu"
+                },
+                "thought": (
+                    "Người dùng muốn tìm bác sĩ chuyên khoa Da liễu. "
+                    "Tôi sẽ gọi tool search_doctors."
+                )
+            }
+
+        # ==============================================================
+        # 2. TRA CỨU LỊCH BÁC SĨ DOC001
+        # ==============================================================
+
+        elif "doc001" in prompt_lower and "lịch" in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "get_doctor_schedule",
+                "arguments": {
+                    "doctor_id": "DOC001",
+                    "date": "13/09/2026"
+                },
+                "thought": (
+                    "Người dùng muốn tra cứu lịch của bác sĩ DOC001. "
+                    "Tôi sẽ gọi tool get_doctor_schedule."
+                )
+            }
+
+        # ==============================================================
+        # 3. ĐẶT LỊCH KHÁM
+        # ==============================================================
+
+        elif "đặt lịch" in prompt_lower:
             return {
                 "type": "tool_call",
                 "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
+                "arguments": {
+                    "doctor_id": "DOC001",
+                    "date": "13/09/2026",
+                    "time": "09:00",
+                    "patient_name": "Nguyen Van A"
+                },
+                "thought": (
+                    "Người dùng yêu cầu đặt lịch khám. "
+                    "Tôi sẽ gọi tool schedule_appointment."
+                )
             }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
-            return {
-                "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
-            }
+
+        # ==============================================================
+        # 4. CÂU HỎI CHUNG → KHÔNG CẦN TOOL
+        # ==============================================================
+
         else:
             return {
                 "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "content": (
+                    "[Mock Agent Response]: "
+                    "Tôi có thể hỗ trợ tìm bác sĩ, "
+                    "tra cứu lịch khám và đặt lịch khám."
+                ),
+                "thought": (
+                    "Câu hỏi không yêu cầu dữ liệu từ Tool, "
+                    "có thể trả lời trực tiếp."
+                )
             }
-
 
 class GeminiProvider(BaseLLMProvider):
     """Google Gemini Provider (Native Tool Calling với Google GenAI SDK)"""
     def __init__(self, api_key: str = None, model: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-2.5-flash"
+        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-3.6-flash"
 
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
